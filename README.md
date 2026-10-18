@@ -4,6 +4,20 @@ An end-to-end data analytics project exploring Netflix's content portfolio, fres
 
 The project combines **PySpark, Python, MySQL, SQL, Plotly, and Streamlit** to transform raw title data into analytical datasets, validate the underlying data model, and present findings through an interactive dashboard.
 
+## Pipeline Architecture
+
+```mermaid
+flowchart LR
+    A["netflix_titles.csv"] --> B["PySpark ETL<br/>etl/01_etl.py"]
+    B --> C["Three CSV tables<br/>dim_title / bridge_genre / bridge_country"]
+    C --> D["MySQL load<br/>etl/02_load_mysql.py"]
+    D --> E["Analytical SQL<br/>sql/03_analytics.sql"]
+    E --> F["KPIs and aggregates"]
+    D --> G["Streamlit + Plotly dashboard<br/>app/app.py"]
+    F --> G
+    G --> H["Business insights"]
+```
+
 ## Dashboard Preview
 
 ### 1. Content Portfolio
