@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+spark-warehouse/
+data/*.csv
+data/processed/
+reference/
+*.pyc
+.ipynb_checkpoints/
+.env.*
