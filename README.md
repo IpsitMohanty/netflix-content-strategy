@@ -7,15 +7,15 @@ The project combines **PySpark, Python, MySQL, SQL, Plotly, and Streamlit** to t
 ## Pipeline Architecture
 
 ```mermaid
-flowchart LR
+flowchart TD
     A["netflix_titles.csv"] --> B["PySpark ETL<br/>etl/01_etl.py"]
     B --> C["Three CSV tables<br/>dim_title / bridge_genre / bridge_country"]
     C --> D["MySQL load<br/>etl/02_load_mysql.py"]
     D --> E["Analytical SQL<br/>sql/03_analytics.sql"]
     E --> F["KPIs and aggregates"]
-    D --> G["Streamlit + Plotly dashboard<br/>app/app.py"]
-    F --> G
+    F --> G["Streamlit + Plotly dashboard<br/>app/app.py"]
     G --> H["Business insights"]
+    D -.-> G
 ```
 
 ## Dashboard Preview
