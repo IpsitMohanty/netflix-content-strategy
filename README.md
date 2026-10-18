@@ -56,7 +56,7 @@ Analyse the distribution of titles across content ratings.
 
 Explore how the composition of the catalogue changes across release decades.
 
-![Content Evolution](docs/evolution.png)
+![Content Evolution](docs/evolution.jpeg)
 
 ### 7. Key Insights
 
@@ -109,7 +109,7 @@ The focus is on connecting data engineering and analytical modelling with practi
 ├── data/
 │   └── processed/
 ├── docs/
-│   ├── evolution.png
+│   ├── evolution.jpeg
 │   ├── freshness.png
 │   ├── genres.png
 │   ├── geography.png
