@@ -233,7 +233,32 @@ The checks cover the following areas:
 
 These checks provide evidence that the analytical datasets satisfy the project's defined structural and consistency rules.
 
+## Key Design Decisions
+- Content age is measured from the newest release year in the data (2021), not today's date. Using
+  today's date left the "Very Recent" group empty because the dataset ends in 2021.
+- All release years are kept; filtering to 2008+ would hide the old content the freshness analysis needs.
+- Three rows had a duration (for example "74 min") in the rating column; they were moved back to the
+  duration column. NR, UR and missing ratings were merged into "Not Rated".
+- Netflix genre tags are type-specific ("Dramas" = movies, "TV Dramas" = series), so the Movie vs TV split
+  inside one genre is almost always 100/0. app/analysis.py groups equivalent tags into themes (Drama,
+  Comedy, Thriller and so on) to compare formats fairly.
+- Country analysis uses all listed countries (bridge_country); primary country is the first listed.
+
+## Results (whole catalogue)
+8,787 titles: 69.6% Movies and 30.4% TV Shows (2.29 movies per TV show). Average content age 6.8 years;
+64.2% released in the last 5 years. 42 genres and 122 countries. Top rating TV-MA; top country United
+States. The dashboard's Insights tab adds filter-aware findings on freshness, evolution, market
+concentration and possible gaps.
+
+## Limitations
+- The data has no audience, viewing or revenue figures, so "underrepresented" means a gap inside the
+  catalogue, not proven unmet demand.
+- The results use the course-provided copy of the dataset, in which 20 of 8,807 rows had malformed fields (no release year) and are excluded, leaving 8,787 titles. Counts from a different copy of the data may differ slightly.
+- The source data ends in September 2021, so 2021 is a partial year in "titles added per year".
+
 ## Getting Started
+
+On macOS/Linux use `cp .env.example .env`, `mkdir -p data/processed` and forward slashes in paths.
 
 ### Prerequisites
 
@@ -242,7 +267,7 @@ Before running the project, ensure that you have:
 - Python 3.10+
 - Java 17 (required by PySpark)
 - MySQL 8, running locally
-- The Kaggle dataset "Netflix Movies and TV Shows", saved as `data/netflix_titles.csv`
+- The Netflix titles dataset ("Netflix Movies and TV Shows" on Kaggle), saved as `data/netflix_titles.csv`. The results below come from the course-provided cleaned copy of this dataset.
 
 ### 1. Clone the repository
 
@@ -337,29 +362,6 @@ The repository excludes local secrets and generated data from version control.
 - `reference/` — retained reference solution materials.
 
 The dashboard screenshots are maintained under `docs/` and referenced using relative paths so that they render directly in the GitHub README.
-
-## Key Design Decisions
-- Content age is measured from the newest release year in the data (2021), not today's date. Using
-  today's date left the "Very Recent" group empty because the dataset ends in 2021.
-- All release years are kept; filtering to 2008+ would hide the old content the freshness analysis needs.
-- Three rows had a duration (for example "74 min") in the rating column; they were moved back to the
-  duration column. NR, UR and missing ratings were merged into "Not Rated".
-- Netflix genre tags are type-specific ("Dramas" = movies, "TV Dramas" = series), so the Movie vs TV split
-  inside one genre is almost always 100/0. app/analysis.py groups equivalent tags into themes (Drama,
-  Comedy, Thriller and so on) to compare formats fairly.
-- Country analysis uses all listed countries (bridge_country); primary country is the first listed.
-
-## Results (whole catalogue)
-8,787 titles: 69.6% Movies and 30.4% TV Shows (2.29 movies per TV show). Average content age 6.8 years;
-64.2% released in the last 5 years. 42 genres and 122 countries. Top rating TV-MA; top country United
-States. The dashboard's Insights tab adds filter-aware findings on freshness, evolution, market
-concentration and possible gaps.
-
-## Limitations
-- The data has no audience, viewing or revenue figures, so "underrepresented" means a gap inside the
-  catalogue, not proven unmet demand.
-- Only titles with a release year are analysed (about 20 malformed source rows are excluded).
-- The source data ends in September 2021, so 2021 is a partial year in "titles added per year".
 
 ## Project Objective
 
