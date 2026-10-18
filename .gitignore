@@ -1,4 +1,6 @@
 .env
+.env.*
+!.env.example
 .venv/
 __pycache__/
 spark-warehouse/
@@ -7,4 +9,3 @@ data/processed/
 reference/
 *.pyc
 .ipynb_checkpoints/
-.env.*
