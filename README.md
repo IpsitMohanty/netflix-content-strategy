@@ -1,5 +1,23 @@
 # Netflix Content Strategy Analytics
 
+## Quick start
+
+```sh
+git clone https://github.com/IpsitMohanty/netflix-content-strategy.git
+cd netflix-content-strategy
+cp .env.example .env
+```
+
+Set `MYSQL_PASSWORD` and `MYSQL_ROOT_PASSWORD` in `.env` to two different strong
+passwords, then start the application:
+
+```sh
+docker compose up --build
+```
+
+The dashboard is at <http://localhost:8501> and the API documentation is at
+<http://localhost:8001/docs>.
+
 8,787 titles: 69.6% Movies / 30.4% TV Shows, average content age 6.8 years, 64.2% released in the last 5 years, 42 genres, 122 countries.
 
 An end-to-end data analytics project exploring Netflix's content portfolio, freshness, genre distribution, geographic reach, ratings, and release trends.
@@ -103,65 +121,30 @@ The focus is on connecting data engineering and analytical modelling with practi
 | FastAPI | REST API for catalogue analytics |
 | Git and GitHub | Version control and project publication |
 
-## Repository Structure
+## Repository structure
 
-```text
-.
-├── api/
-│   ├── Dockerfile
-│   ├── __init__.py
-│   ├── main.py
-│   └── requirements.txt
-├── app/
-│   ├── Dockerfile
-│   ├── analysis.py
-│   ├── app.py
-│   └── requirements.txt
-├── data/
-│   └── processed/
-├── db/
-│   └── init/
-│       ├── 10-netflix_db.sql
-│       └── README.txt
-├── docs/
-│   ├── catalogue-analytics-dashboard.png
-│   ├── evolution.jpeg
-│   ├── freshness.png
-│   ├── genres.png
-│   ├── geography.png
-│   ├── insight.png
-│   ├── portfolio.png
-│   ├── ratings.png
-│   └── swagger-api-overview.png
-├── etl/
-│   ├── 01_etl.py
-│   ├── 02_load_mysql.py
-│   └── 03_run_sql.py
-├── sql/
-│   └── 03_analytics.sql
-├── tests/
-│   ├── test_api.py
-│   └── validate_grain.py
-├── .gitignore
-├── .env.example
-├── docker-compose.yml
-├── README.md
-└── requirements.txt
+- `api/` — FastAPI service and its Docker image.
+- `app/` — Streamlit dashboard, analysis helpers, and its Docker image.
+- `data/` — raw source CSV and processed analytical CSVs, tracked in Git.
+- `db/init/` — SQL dump used to initialize the MySQL container.
+- `etl/` and `sql/` — data preparation, loading, and analytics scripts.
+- `tests/`, `docs/`, and `reference/` — validation, documentation images, and reference materials.
+- `docker-compose.yml` — local multi-service deployment.
+
+## Data
+
+`data/netflix_titles.csv` is the raw title dataset. The tracked
+`data/processed/` directory contains `dim_title.csv`, `bridge_genre.csv`, and
+`bridge_country.csv`. Regenerate these processed files from the repository root with:
+
+```sh
+python etl/01_etl.py
 ```
 
-### Directory responsibilities
+The raw dataset was provided through the upGrad course files; its source is listed below.
 
-- **`api/`** — FastAPI endpoints backed by MySQL.
-- **`app/`** — dashboard application, analytical logic, and its slim Docker image.
-- **`db/init/`** — populated MySQL SQL dump for first-time Docker database initialization.
-- **`data/processed/`** — generated datasets used by the analytical workflow.
-- **`docs/`** — dashboard screenshots used in this documentation.
-- **`etl/`** — data preparation, MySQL loading, and SQL execution scripts.
-- **`sql/`** — analytical SQL queries and table definitions.
-- **`tests/`** — data-model and analytical validation checks.
-- **`reference/`** — reference solution materials retained locally and excluded from version control.
-
-Generated datasets under `data/processed/` are excluded from version control to avoid committing derived data files unnecessarily.
+- Original dataset source: "Netflix Movies and TV Shows" by Kaggle user shivamb, https://www.kaggle.com/datasets/shivamb/netflix-shows (provided to me through the upGrad course files).
+- Dataset licence: see the licence shown on the Kaggle dataset page above. The raw CSV is included here only so the project can be reproduced end to end.
 
 ## Data Pipeline
 
@@ -337,7 +320,8 @@ concentration and possible gaps.
 
 ## Getting Started
 
-On macOS/Linux use `cp .env.example .env`, `mkdir -p data/processed` and forward slashes in paths.
+On macOS/Linux use `cp .env.example .env` and forward slashes in paths. The processed
+data directory and CSVs are already tracked, so no `mkdir` step is needed.
 
 ### Prerequisites
 
@@ -392,13 +376,7 @@ copy .env.example .env
 
 Put your MySQL password in `.env`. The `.env` file is git-ignored and must never be committed.
 
-### 5. Create the processed-data directory
-
-```powershell
-mkdir data\processed
-```
-
-### 6. Run the ETL pipeline
+### 5. Run the ETL pipeline
 
 From the project root, execute the scripts in the intended order:
 
@@ -408,9 +386,10 @@ python etl\02_load_mysql.py
 python etl\03_run_sql.py
 ```
 
-The ETL input is `data/netflix_titles.csv`.
+The ETL input is `data/netflix_titles.csv`; its default output directory,
+`data/processed/`, already exists in a fresh clone.
 
-### 7. Run the validation checks
+### 6. Run the validation checks
 
 ```powershell
 python tests\validate_grain.py
@@ -418,7 +397,7 @@ python tests\validate_grain.py
 
 The validation script checks the structure and consistency of the analytical datasets.
 
-### 8. Launch the dashboard
+### 7. Launch the dashboard
 
 ```powershell
 python -m streamlit run app/app.py
@@ -444,22 +423,34 @@ For Streamlit, set `API_BASE_URL=http://localhost:8000` in `.env` (this is the d
 
 The local MySQL database must first be dumped into `db/init/10-netflix_db.sql`; the dump included
 in this workspace contains the actual tables from the local database used for this project. To
-regenerate it from a running MySQL instance on port 3306, use PowerShell and enter the password
-at the prompt. After changing this dump or any file in `db/init/`, MySQL will not rerun
+regenerate it from a running MySQL instance on port 3306, run `mysqldump` from a shell where it
+is installed and enter the password at the prompt. After changing this dump or any file in `db/init/`, MySQL will not rerun
 initialization against an existing volume; regenerate the dump with the command below, then run
 `docker compose down -v` followed by `docker compose up --build` to recreate the database volume.
+
+```sh
+mysqldump --host=127.0.0.1 --port=3306 --user=root --password \
+  --single-transaction --skip-lock-tables --set-gtid-purged=OFF \
+  netflix_db dim_title bridge_genre bridge_country agg_genre agg_genre_type \
+  agg_genre_pairs agg_country agg_country_type agg_country_genre agg_rating \
+  agg_rating_type agg_rating_genre agg_rating_country agg_age_group_type \
+  agg_genre_freshness agg_genre_age_group agg_type_year agg_type_decade \
+  agg_genre_decade agg_country_decade agg_added_year kpi_summary \
+  > db/init/10-netflix_db.sql
+```
+
+On Windows PowerShell, use the installed executable path and `--result-file`, for example:
 
 ```powershell
 & "C:\Program Files\MySQL\MySQL Server 9.7\bin\mysqldump.exe" --host=127.0.0.1 --port=3306 --user=root --password --single-transaction --skip-lock-tables --set-gtid-purged=OFF --result-file="db\init\10-netflix_db.sql" netflix_db dim_title bridge_genre bridge_country agg_genre agg_genre_type agg_genre_pairs agg_country agg_country_type agg_country_genre agg_rating agg_rating_type agg_rating_genre agg_rating_country agg_age_group_type agg_genre_freshness agg_genre_age_group agg_type_year agg_type_decade agg_genre_decade agg_country_decade agg_added_year kpi_summary
 ```
 
-If `mysqldump.exe` is installed elsewhere, replace only its executable path. The command dumps
-all three core tables, all aggregate tables, and `kpi_summary` without placing a password in
-shell history. The dump is required before the first Compose start; MySQL initialization scripts
-run only when the named data volume is empty.
+The commands dump all three core tables, all aggregate tables, and `kpi_summary`
+without placing a password in shell history. The dump is required before the first
+Compose start; MySQL initialization scripts run only when the named data volume is empty.
 
-Configure `.env` with non-placeholder credentials (including `MYSQL_PASSWORD` and
-`MYSQL_ROOT_PASSWORD`). `MYSQL_APP_USER` is the non-root database account used by the
+Configure `.env` with two different strong values for the required `MYSQL_PASSWORD` and
+`MYSQL_ROOT_PASSWORD` settings. `MYSQL_APP_USER` is the non-root database account used by the
 containers; `MYSQL_USER` continues to configure the local ETL scripts. Then start the services:
 
 ```powershell
@@ -467,9 +458,10 @@ docker compose up --build
 ```
 
 The services use one Docker network. API and Streamlit connect to MySQL through the `mysql`
-service name; the browser reaches Streamlit at `http://localhost:8501`, the API at
-`http://localhost:8001`, and the MySQL container is published on host port `3307` so it does not
-conflict with a local MySQL on `3306`. The API waits for MySQL's health check before starting.
+service name; the browser reaches the dashboard at `http://localhost:8501` and API documentation
+at `http://localhost:8001/docs`. MySQL is bound to `127.0.0.1:3307` for local host access only.
+On any public server, remove the MySQL `ports` mapping or leave MySQL unpublished; do not expose
+the database port publicly. The API waits for MySQL's health check before starting.
 
 The API container listens on port `8000`; Compose publishes it on host port `8001`. Streamlit
 uses the internal URL `http://api:8000`. The Compose file pins the database image to `mysql:8.0`.
@@ -488,15 +480,18 @@ or call `http://localhost:8001/health`. On the first run, verify the release-yea
 
 Dependencies are maintained in [`requirements.txt`](requirements.txt).
 
-The project uses version constraints rather than a fully pinned dependency lockfile. For reproducible execution across different environments, dependency compatibility should be verified against the Python version and local MySQL setup.
+The API and dashboard Docker images use exact package versions in their respective
+requirements files. The root requirements file is used for the broader local ETL workflow.
 
 ## Configuration and Version Control
 
-The repository excludes local secrets and generated data from version control.
+The repository excludes local secrets and local virtual environments from version
+control. The raw and processed project data is tracked so others can reproduce the
+analysis.
 
 - `.env` — local configuration; do not commit credentials.
 - `.venv/` — local Python virtual environment.
-- `data/processed/` — generated analytical datasets.
+- `data/processed/` — generated analytical datasets, tracked so fresh clones can reproduce the project.
 - `reference/` — retained reference solution materials.
 
 The dashboard screenshots are maintained under `docs/` and referenced using relative paths so that they render directly in the GitHub README.
